@@ -22,9 +22,9 @@ next_point:
 
     fld     dword [d_t]
     fld     dword [x_]  ;1
-    fmul    dword [x_]  ;2
+    fmul    st0 ;dword [x_]  ;2
     fld     dword [y_]  ;3
-    fmul    dword [y_]  ;4
+    fmul    st0 ;dword [y_]  ;4
     fadd    st0, st1    ;5
 
     fld     st0         ;st(0) = r^2, st(1) = r^2
@@ -58,14 +58,13 @@ next_point:
 
 %ifdef STOP_BOARD
     ftst ;ficom   word [board_zero]
-    fstsw   ax
+    fnstsw   ax
     mov cx, ax
     ficom   word [board_y_r]
     fnstsw  ax
     or      ax, cx
-    and     ax, 4500h
-    cmp     ax, 4000h
-    jz $
+    and     ax, 4000h
+    jnz $
 %endif
 
     fistp   dword [y_i] ;update Y coordinate
@@ -106,15 +105,15 @@ return_v_y:
 
 %ifdef STOP_BOARD
     mov     bx, ax
-    ftst ;ficom   word [board_zero]
+    ftst
     fnstsw  ax
-    mov cx, ax
+    mov     cx, ax
+
     ficom   word [board_x_r]
-    fstsw   ax
+    fnstsw  ax
     or      ax, cx
-    and     ax, 4500h
-    cmp     ax, 4000h
-    jz $
+    and     ax, 4000h
+    jnz $
     mov     ax, bx
 %endif
     fistp   dword [x_i] ;update X coordinate
@@ -177,16 +176,15 @@ section .data
 dv          dd      0.01
 %endif
 %ifdef STOP_BOARD
-;board_zero  dw     0
 board_y_r   dw      200
 board_x_r   dw      320
 %endif
-ka          dd      -0.7
+ka          dd      -0.07
 kb          dd      0.1
 L_x         dd      160.0
 L_y         dd      100.0
-d_t         dd      0.01
-x_          dd      0.0
+d_t         dd      0.005
+x_          dd      -50.0
 y_          dd      50.0
 v_x         dd      0.1
-v_y         dd      -0.00
+v_y         dd      0.1
