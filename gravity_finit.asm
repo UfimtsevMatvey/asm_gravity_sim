@@ -8,8 +8,10 @@ org 100h
 section .text 
 
 start:
+x_i:    
     mov ax, 013h     ;VGA mode
     int 10h         ;320 x 200 16 colors.
+y_i:    
     mov ax,0A000h
     mov es,ax       ;ES points to the video memory.
 
@@ -24,10 +26,11 @@ next_point:
     fld     dword [y_]  ;3
     fmul    dword [y_]  ;4
     fadd    st0, st1    ;5
+
+    fld     st0         ;st(0) = r^2, st(1) = r^2
     fsqrt               ;st(0) = r
-    fld     st0
-    fmul    st0, st0    
     fmul    st0, st1    ;6
+
     fstp
     fld     dword [ka]  ;7
     fld     dword [ka]
@@ -50,19 +53,16 @@ next_point:
     fmul    st0, st6
     fadd    dword [y_]  
     fst     dword [y_]  ;update y
-    fmul    dword [scale]
-    fadd    dword [offset_y]
+    fadd    dword [L_y]
     frndint
 
 %ifdef STOP_BOARD
-    ficom   dword [board_y_u]
+    ficom   word [board_zero]
     fstsw   ax
-    and     ax, 4500h
-    cmp     ax, 4000h
-    jz $
-
-    ficom   dword [board_zero]
+    mov cx, ax
+    ficom   word [board_y_r]
     fstsw   ax
+    or      ax, cx
     and     ax, 4500h
     cmp     ax, 4000h
     jz $
@@ -76,7 +76,8 @@ next_point:
     mov ah, 1  ;ah = 01
     int 16h
     jz return_v_y
-    mov ah, 0
+    xor ah, ah
+    ;mov ah, 0
     int 16h
 
     cmp ah, 17  ; 17 - scan code "w"(up) key
@@ -101,24 +102,21 @@ return_v_y:
     fmul    st0, st5
     fadd    dword [x_]
     fst     dword [x_]  ;update x
-    fmul    dword [scale]
-    fadd    dword [offset_x]
+    fadd    dword [L_x]
     frndint
 
 %ifdef STOP_BOARD
-    mov bx, ax
-    ficom   dword [board_zero]
+    mov     bx, ax
+    ficom   word [board_zero]
     fstsw   ax
+    mov cx, ax
+    ficom   word [board_x_r]
+    fstsw   ax
+    or      ax, cx
     and     ax, 4500h
     cmp     ax, 4000h
     jz $
-
-    ficom   dword [board_x_r]
-    fstsw   ax
-    and     ax, 4500h
-    cmp     ax, 4000h
-    jz $
-    mov ax, bx
+    mov     ax, bx
 %endif
     fistp   dword [x_i] ;update X coordinate
 
@@ -132,6 +130,7 @@ return_v_y:
     jz left_v_i
     
     jmp end_compute
+
 left_v_i:
     fsub    dword [dv]
     jmp end_compute
@@ -150,9 +149,9 @@ end_compute:
     fst     dword [v_x] ;update V_x
     ;input:         (x_i, y_i)
     ;output: di -   (address)
-    mov di, word [y_i]
+    ;mov di, word [y_i]
     mov ax, 200
-    sub ax, di
+    sub ax, word [y_i];di
     mov di, 320 
     mul di
     add ax, word [x_i]
@@ -166,7 +165,7 @@ end_compute:
     jnz read_key
     jmp next_point
 read_key:
-    mov ah, 0
+    xor ah, ah
     int 16h
     cmp ah, 28  ; 28 - scan code Enter
     jz $
@@ -179,22 +178,16 @@ section .data
 dv          dd      0.01
 %endif
 %ifdef STOP_BOARD
-board_zero  dd     0
-board_y_u   dd      200
-board_x_r   dd      320
+board_zero  dw     0
+board_y_r   dw      200
+board_x_r   dw      320
 %endif
-ka          dd      -0.02
-kb          dd      0.002
-L_x         dd      32.0
-L_y         dd      20.0
-scale       dd      5.0
+ka          dd      -0.7
+kb          dd      0.1
+L_x         dd      160.0
+L_y         dd      100.0
 d_t         dd      0.01
-offset_y    dd      100.0
-offset_x    dd      160.0
 x_          dd      0.0
-y_          dd      10.0
-v_x         dd      0.05
+y_          dd      50.0
+v_x         dd      0.1
 v_y         dd      -0.00
-;cordinarte on layout
-x_i         dd      0
-y_i         dd      0
