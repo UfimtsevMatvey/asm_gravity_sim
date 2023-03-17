@@ -33,7 +33,7 @@ next_point:
 
     fstp
     fld     dword [ka]  ;7
-    fld     dword [ka]
+    fld     st0 ;dword [ka]
     fdiv    st0, st2    ;8
     fmul    dword [x_]  ;9
     fld     dword [y_]  
@@ -46,7 +46,7 @@ next_point:
     faddp               ;13
     fld     dword [L_y]
     fsub    dword [y_]  ;14
-    fmul    st0, st0    ;15
+    fmul    st0 ;, st0    ;15
     fdivr   dword [kb]  ;16
     fsubp               ;17
     fld     dword [v_y] 
