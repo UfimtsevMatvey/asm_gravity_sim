@@ -57,11 +57,11 @@ next_point:
     frndint
 
 %ifdef STOP_BOARD
-    ficom   word [board_zero]
+    ftst ;ficom   word [board_zero]
     fstsw   ax
     mov cx, ax
     ficom   word [board_y_r]
-    fstsw   ax
+    fnstsw  ax
     or      ax, cx
     and     ax, 4500h
     cmp     ax, 4000h
@@ -77,7 +77,6 @@ next_point:
     int 16h
     jz return_v_y
     xor ah, ah
-    ;mov ah, 0
     int 16h
 
     cmp ah, 17  ; 17 - scan code "w"(up) key
@@ -107,8 +106,8 @@ return_v_y:
 
 %ifdef STOP_BOARD
     mov     bx, ax
-    ficom   word [board_zero]
-    fstsw   ax
+    ftst ;ficom   word [board_zero]
+    fnstsw  ax
     mov cx, ax
     ficom   word [board_x_r]
     fstsw   ax
@@ -178,7 +177,7 @@ section .data
 dv          dd      0.01
 %endif
 %ifdef STOP_BOARD
-board_zero  dw     0
+;board_zero  dw     0
 board_y_r   dw      200
 board_x_r   dw      320
 %endif
